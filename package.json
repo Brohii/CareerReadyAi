@@ -1,0 +1,16 @@
+{
+  "name": "careerreadyai",
+  "version": "1.0.0",
+  "description": "A Final Year Project, Which will help users in careers, by preparing them for interviews by taking mock interview, and much more...",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "backend",
+    "fyp"
+  ],
+  "author": "Muhammad Naeem Brohi",
+  "license": "ISC"
+}
