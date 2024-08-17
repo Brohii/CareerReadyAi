@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "A Final Year Project, Which will help users in careers, by preparing them for interviews by taking mock interview, and much more...",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon src/index.js"
   },
   "keywords": [
     "javascript",
@@ -12,5 +13,9 @@
     "fyp"
   ],
   "author": "Muhammad Naeem Brohi",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "prettier": "^3.3.3"
+  }
 }
