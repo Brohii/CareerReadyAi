@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
+        index: true,
+        match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email address']
         },
     fullName: {
         type: String,
@@ -25,7 +27,8 @@ const userSchema = new mongoose.Schema({
     },
     interviewhHistory: [{ 
         type: mongoose.Types.ObjectId,
-        ref: "Interview"
+        ref: "InterviewResult",
+        default: []
     }],
     password:{
         type: String,
@@ -46,9 +49,14 @@ this.password = await bcrypt.hash(this.password, 10)
 next()
 })
 
+
+
 mongoose.methods.isPasswordCorrent = async function(password){
    return await bcrypt.compare(password, this.password)
 }
+
+
+
 userSchema.methods.generateAccessToken = function (){
     return jwt.sign(
         {
