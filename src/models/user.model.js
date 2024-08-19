@@ -25,16 +25,7 @@ const userSchema = new mongoose.Schema({
         trim: true,
         index: true
     },
-    interviewhHistory: [{ 
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "InterviewSession",
-        default: []
-    }],
-    cvHistory:[{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "CvCollection",
-        default: []
-    }],
+
     password:{
         type: String,
         required: [true, "Password is Required"]

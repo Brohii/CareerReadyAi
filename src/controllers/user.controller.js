@@ -6,32 +6,33 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 
 
     // get user data from frontend
-    const {username, email, password} = req.body
+    const {username, email, password,fullName} = req.body
    // console.log("user email is: ",email)
 
 
         // validate the data from user   
-    if([username,email,password].some((field)=>field?.trim === "")){
+    if( [username,email,password].some((field)=>field?.trim() === "")){
         throw new ApiError(400, "All fields are required")
     }   
 
     
     // check if the user already exists
-    const existedUser = User.findOne(email)
+    const existedUser = await User.findOne({email})
 
     if(existedUser){
         throw new ApiError(409,"User Already Exists with this Email")
     }
     // created user object, create db entry
     const user = await User.create({
-        username: toLowerCase(),
-        email,
-        fullName: fullName ?? "",
+        username: username.toLowerCase(),
+        email: email.toLowerCase(),
+        fullName: fullName ? fullName: "",
         password,
     })
 
     //remove password from response
-    const createdUser = await User.findById(user._id.select("-password"))
+    const createdUser = await User.findById(user._id).select("-password")
+    
 
     //check for user response
     if(!createdUser){
