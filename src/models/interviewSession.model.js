@@ -2,9 +2,9 @@ import mongoose from 'mongoose'
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 
-const interviewResultSchema = new mongoose.Schema({
+const interviewSessionSchema = new mongoose.Schema({
 
-interview:{ 
+interviewSession:{ 
     type:String,
     required:true
 },
@@ -24,8 +24,18 @@ title:{
     type:String,
     required:true
 },
+interview_status:{
+type: String,
+enum: ['started','finished'],
+required: true,
+},
+interview_level:{
+type: String,
+enum: ['easy','medium','hard'],
+required: true
+},
 rating:{ 
-    type:String,
+    type:Number,
     required:true
 },
 user:{
@@ -35,9 +45,9 @@ user:{
 
   
 
-},{timestamp: true})
+},{timestamps: true})
 
-interviewResultSchema.plugin(mongooseAggregatePaginate)
+interviewSessionSchema.plugin(mongooseAggregatePaginate)
 
 
-export const InterviewResult = mongoose.model("InterviewResult",interviewResultSchema)
+export const InterviewSession = mongoose.model("InterviewSession",interviewSessionSchema)

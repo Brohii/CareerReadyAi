@@ -2,7 +2,7 @@ import mongoose, { mongo } from "mongoose"
 
 
 
-const jobDescriptionSchema = mongoose.Schema({
+const jobDescriptionSchema = new mongoose.Schema({
     descriptionText:{
         type: String,
         required: true
