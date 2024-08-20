@@ -104,12 +104,13 @@ return res.status(200)
 
 const logoutUser = asyncHandler(async(req,res)=>{
 
+    const options = {
+        httpOnly: true, 
+        secure: true,   
+        sameSite: 'Strict', 
+        path: '/' 
+    };
     
-const options = {
-    httpOnly: true,
-    secure: true
-}
-
 res.status(200)
 .clearCookie("accessToken", options)
 .json(
@@ -117,4 +118,18 @@ res.status(200)
 )
 })
 
-export {registerUser, loginUser ,logoutUser}
+const loggedinuUserAccessible = asyncHandler(async(req,res)=>{
+
+    const userData = req.user
+    if (!userData) {
+        throw new ApiError(400,"User data not found. Ensure JWT middleware is correctly applied.");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200,{userData},"Secured Route")
+    )
+
+
+})
+
+export {registerUser, loginUser ,logoutUser, loggedinuUserAccessible}
