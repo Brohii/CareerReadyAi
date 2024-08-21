@@ -118,18 +118,70 @@ res.status(200)
 )
 })
 
-const loggedinuUserAccessible = asyncHandler(async(req,res)=>{
+const changeUserPassword = asyncHandler(async(req,res)=>{
 
-    const userData = req.user
-    if (!userData) {
-        throw new ApiError(400,"User data not found. Ensure JWT middleware is correctly applied.");
+    const {oldPassword, newPassword} = req.body
+
+     const user = await User.findById(req.user._id)
+
+     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+    
+     if(!isPasswordCorrect){
+        throw new ApiError(400,"Incorrect Password")
+     }
+
+
+     user.password = newPassword
+    await user.save({validateBeforeSave: false})
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200,{},"Password Changed Successfully"))
+})
+
+const userDetailsUpdate = asyncHandler(async(req,res)=>{
+
+    const {email, fullName, username} = req.body
+
+    if(!email || !fullName || !username){
+        throw new ApiError(401,"Fill any of the fields to update! ")
     }
 
+   await User.findByIdAndUpdate(req.user._id,
+    {
+        $set:{
+            fullName,
+            email,
+            username
+        }
+    }
+    ,{new: true}
+   ).select("-password")
+
+   return res
+   .status(200)
+   .json( new ApiResponse(200,{},"Account Details Updated Successfully"))
+
+
+})
+
+
+
+
+const loggedinuUserAccessible = asyncHandler(async(req,res)=>{
+
     res.status(200).json(
-        new ApiResponse(200,{userData},"Secured Route")
+        new ApiResponse(200,req.user,"Secured Route")
     )
 
 
 })
 
-export {registerUser, loginUser ,logoutUser, loggedinuUserAccessible}
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    loggedinuUserAccessible,
+    changeUserPassword,
+    userDetailsUpdate
+}

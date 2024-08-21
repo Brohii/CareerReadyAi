@@ -6,8 +6,25 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    cb(null, file.fieldname + '-' + uniqueSuffix)
+    cb(null, file.originalname + '-' + uniqueSuffix)
   }
 });
 
-export const upload = multer({ storage: storage });
+
+// Set up file filter to only accept PDFs
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'application/pdf') {
+      cb(null, true); // Accept the file
+  } else {
+      cb(new Error('Only PDFs are allowed'), false); // Reject the file
+  }
+};
+
+// Initialize multer with storage and file filter configuration
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 } // Optional: limit the file size to 10 MB
+});
+
+export { upload };
