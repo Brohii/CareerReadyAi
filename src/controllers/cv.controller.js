@@ -27,26 +27,20 @@ const listcvfiles = asyncHandler(async(req,res)=>{
 const uploadCvFile = asyncHandler(async(req,res)=>{
     
     const userId = req.user._id
-    const {tempCvText} = req.body
     
     
     
-        if (!req.file && !tempCvText) {
+        if (!req.file) {
         return res.status(400).json({ message: 'Please provide CV content or upload your cv to start the interview' });
         }
 
      try {
     
-        if (tempCvText && !req.file){
-            res.status(200).json( new ApiResponse(200,
-                {cvText :tempCvText}, " cv content is given using cvText"))
-        }else if(req.file && !tempCvText){
+        
             const cvLocalPath = req.file.path
-
-            const filePath = cvLocalPath;
         
         
-            const cvContent = await extractTextFromPDF(filePath)
+            const cvContent = await extractTextFromPDF(cvLocalPath)
         
 
         // Fetch all CVs for the user, sorted by creation date (oldest first)
@@ -61,7 +55,7 @@ const uploadCvFile = asyncHandler(async(req,res)=>{
 
                 try {
                 // Delete the file from the server
-                await fs.unlinkSync(oldestCvPath);
+                fs.unlinkSync(oldestCvPath);
                 } catch (err) {
                 console.error(`Failed to delete file: ${oldestCvPath}`, err);
                 }
@@ -79,13 +73,11 @@ const uploadCvFile = asyncHandler(async(req,res)=>{
             cvText: cvContent
             })
         
-            res.status(200).json(new ApiResponse(200,{cvFileUrl: newCvEntry.cvFileUrl}," CV file uploaded successfully"))
+            return res.status(200).json(new ApiResponse(200,{newCvEntry}," CV file uploaded successfully"))
 
-            }
-        else{
-            res.status(500).json({message:"both inputs were given"})
+            
         }
-        }
+        
         
         
         catch(error) {
@@ -96,20 +88,6 @@ const uploadCvFile = asyncHandler(async(req,res)=>{
     })
 
 
-
-
-    const submitCvText = asyncHandler((req,res)=>{
-
-        const { text } = req.body;
-    
-      if (!text) {
-        return res.status(400).send('No CV text provided.');
-      }
-    
-      
-    
-    
-    })
         export {
     listcvfiles,
     uploadCvFile
