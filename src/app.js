@@ -18,8 +18,12 @@ app.use(cookieParser())
 
 import userRouter from './routes/user.route.js';
 import cvRouter from './routes/cv.route.js'
+import interviewRouter from './routes/interview.route.js'
+
+
 app.use("/api/v1/users",userRouter)
 app.use("/api/v1/cv", cvRouter)
+app.use("/api/v1/interview", interviewRouter)
 
 
 
