@@ -33,12 +33,13 @@ const openai = new OpenAI({
           console.error("Error fetching thread messages:", error);
           return null;
       }
-  }function removeInterviewCode(text) {
-    // Regular expression to match the pattern "Your interview code is: <code>" and remove till the first full stop
-    const pattern = /\.?\s*interview code is:\s*\w+\s*\.\s*/;
-    return text.replace(pattern, '');
   }
   
+ function removeInterviewCode(text) {
+  // Regular expression to match the pattern "Interview code is: <code>." and remove it.
+  const pattern = /interview code is:\s*\w+\s*\./i;
+  return text.replace(pattern, '');
+}
 
 
 
@@ -79,7 +80,7 @@ const startInterviewSession = asyncHandler(async (req,res)=>{
                   - If the CV matches the job description, return: { "match": true, "suggestion": "" } dont add any comment just just the return response as asked when its true.
                   - If the CV does not match the job description, return: { "match": false, "suggestion":  suggestion the user for other positions the user should consider based on the CV} 
                   - if the job description and cv has the same domain but with different experience level should be considered matched and return true.
-                  - similar domains should be matched true.
+                  - similar domains and fields should be matched true. (this should be given importance)
                   CV: ${cvTextInput}
                   
                   Job Description: ${jobDescription}`,
@@ -88,22 +89,22 @@ const startInterviewSession = asyncHandler(async (req,res)=>{
 
   
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o",
       messages: checkCvAndJobRelevancy,
       max_tokens: 250
     });
     console.log(response.choices[0].message.content)
     const modelResponse= response.choices[0].message.content;
-    const matchResult = JSON.parse(modelResponse);
-    console.log(matchResult)
+    //const matchResult = JSON.parse(modelResponse);
+   // console.log(matchResult)
+    if (!modelResponse.match) {
+        return res.status(200).json(new ApiResponse (200,{matchResult},"The user CV doesn't Match with the Job Description"));
+    }
   }catch(error){
     throw new ApiError(500, "We were unable to parse the response")
 
   }
 
-    if (!matchResult.match) {
-        return res.status(200).json(new ApiResponse (200,{matchResult},"The user CV doesn't Match with the Job Description"));
-    }
 
 
        
@@ -157,28 +158,29 @@ const startInterviewSession = asyncHandler(async (req,res)=>{
           } else {
             console.log(run.status);
           }
-          const interviewConversationArray = {
+          const assistantMessage = {
               assistant: conversationArray[1]
             }
           
-          console.log(interviewConversationArray)
+          console.log(assistantMessage)
           
           const interviewStatus = 'started'
 
           const  interviewSession = await InterviewSession.create({
 
-             interviewConversation: interviewConversationArray,
+             interviewConversation: assistantMessage,
              cvText: cvTextInput,
              jobDescription: jobDescription,
              interview_complexity: complexity,
              interview_status: interviewStatus,
-             threadid: thread.id
+             threadid: thread.id,
+             user: user._id
            })
 
            console.log(interviewSession)
 
 
-           return res.status(200).json(new ApiResponse(200, assistantmessage, interviewSession, "Interview has started"))
+           return res.status(200).json(new ApiResponse(200, assistantMessage, interviewSession, "Interview has started"))
 })
 
 
@@ -313,7 +315,8 @@ const interviewSession = asyncHandler(async (req,res)=>{
                 - try to focus on the answers of the candidate based on the questions asked by the assistant.
                 - do not critisize the transcript quality focus more on the conversation in the interview.
                 - whenever you are talking about the candidate use You ( example: your answers were not clear in the question ...)
-                - make sure it is in json parsable format, like this; [{Suggestion : the suggestion you provide, },{feedback: the feedbadck you provide}, {rating: the rating you provide (1-100)}
+                - make sure it is in json parsable format, like this; [{Suggestion : the suggestion you provide, },{Feedback: the feedbadck you provide}, {Rating: the rating you provide (1-100), {Title: provide a title, title should be based of the job name or company name}}
+                - Rating should be very dependent on the performance if the candidate perform well and shows interest score consider it good, if the candidate seems disinterested and avoiding to answer rate it bad.
                 CV: ${interviewrecordupdate.cvText}
                 complexity: ${interviewrecordupdate.complexity}
                 Job Description: ${interviewrecordupdate.jobDescription}
@@ -330,12 +333,13 @@ const interviewSession = asyncHandler(async (req,res)=>{
   });
 
   //console.log(iresponse.choices[0].message.content)
-  const modelResponse= iresponse.choices[0].message.content;
+  const modelResponse = iresponse.choices[0].message.content;
   console.log(modelResponse)
   const generatedFSR = JSON.parse(modelResponse);
-  console.log(generatedFSR.Feedback)
-  console.log(generatedFSR.Rating)
-  console.log(generatedFSR.Suggestion)
+  console.log(generatedFSR?.Feedback?.feedback)
+  console.log(generatedFSR?.Rating?.rating)
+  console.log(generatedFSR?.Suggestion?.suggestion)
+
 
   
   // store the suggestions, feedback, and rating in the database and return the response.
@@ -343,18 +347,19 @@ const interviewSession = asyncHandler(async (req,res)=>{
   const storeFSR =  await InterviewSession.findByIdAndUpdate(interviewID,
     {
       $set:{
-        feedback: generatedFSR.Feedback,
-        rating: generatedFSR.Rating,
-        suggestion: generatedFSR.Suggestion
+        feedback: generatedFSR?.Feedback,
+        rating: generatedFSR?.Rating,
+        suggestion: generatedFSR?.Suggestion,
+        title: generatedFSR?.Title
       }
     }
     ,{new: true}
   )
   const updatedValues = await InterviewSession.findById(interviewID)
-
-  return res.status(200).json(new ApiResponse(200,assistantMessage, updatedValues, "The interview has finished successfully. feedback suggestions and rating is done."))
-
+  
   console.log(updatedValues)
+  return res.status(200).json(new ApiResponse(200,assistantMessage, generatedFSR, "The interview has finished successfully. feedback suggestions and rating is done."))
+
  
 }
 

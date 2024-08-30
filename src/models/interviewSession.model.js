@@ -36,6 +36,9 @@ suggestion:{
 feedback:{ 
     type:String,
 },
+title:{
+    type: String
+},
 threadid:{
     type: String,
     required: true
