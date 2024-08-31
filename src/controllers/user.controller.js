@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.model.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
+
 const generateAccessTokens = async(userId)=>{
     try{
         await User.findById(userId)
@@ -117,9 +118,11 @@ res.status(200)
 )
 })
 
-const changeUserPassword = asyncHandler(async(req,res)=>{
+const changeCurrentPassword = asyncHandler(async(req,res)=>{
 
     const {oldPassword, newPassword} = req.body
+
+    console.log(oldPassword,newPassword)
 
      const user = await User.findById(req.user._id)
 
@@ -138,23 +141,34 @@ const changeUserPassword = asyncHandler(async(req,res)=>{
     .json(new ApiResponse(200,{},"Password Changed Successfully"))
 })
 
-const userDetailsUpdate = asyncHandler(async(req,res)=>{
+const updateAccountDetails = asyncHandler(async(req,res)=>{
 
     const {email, fullName, username} = req.body
-
-    if(!email || !fullName || !username){
-        throw new ApiError(401,"Fill any of the fields to update! ")
-    }
-
-   await User.findByIdAndUpdate(req.user._id,
-    {
-        $set:{
-            fullName,
-            email,
-            username
+    
+    if(email){
+        const existedUserEmail = await User.findOne({email})
+        if(existedUserEmail){
+            throw new ApiError(409,"User Already Exists with this Email")
         }
     }
-    ,{new: true}
+    if(username){
+    const existedUsername = await User.findOne({username})
+        if(existedUsername){
+          throw new ApiError(409,"User Already Exists with this username")
+        }
+    }
+    let updateFields = {};
+  
+    
+   
+
+    if (fullName) updateFields.fullName = fullName;
+    if (email) updateFields.email = email;
+    if (username) updateFields.username = username;
+
+   await User.findByIdAndUpdate(req.user._id,
+    { $set: updateFields },
+    { new: true }
    ).select("-password")
 
    return res
@@ -181,6 +195,6 @@ export {
     loginUser,
     logoutUser,
     loggedinuUserAccessible,
-    changeUserPassword,
-    userDetailsUpdate
+    changeCurrentPassword,
+    updateAccountDetails
 }
