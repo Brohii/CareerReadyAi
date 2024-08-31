@@ -2,7 +2,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.model.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
-
 const generateAccessTokens = async(userId)=>{
     try{
         await User.findById(userId)
@@ -26,7 +25,7 @@ const generateAccessTokens = async(userId)=>{
     // get user data from frontend
     const {username, email, password,fullName} = req.body
    // console.log("user email is: ",email)
-
+    console.log(username, email, password,fullName)
 
         // validate the data from user   
     if( [username,email,password].some((field)=>field?.trim() === "")){

@@ -5,7 +5,7 @@ import {listcvfiles, uploadCvFile} from "../controllers/cv.controller.js"
 
 const router = Router()
 
-router.route("/listcvfiles").post(verifyJWT, listcvfiles )
+router.route("/listcvfiles").get(verifyJWT, listcvfiles )
 router.route("/uploadcv").post(verifyJWT, upload.single("CV"), uploadCvFile)
 
 export default router
