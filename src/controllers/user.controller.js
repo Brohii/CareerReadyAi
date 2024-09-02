@@ -13,60 +13,61 @@ const generateAccessTokens = async(userId)=>{
 
     }
     catch(error){
-        throw new ApiError(500,"Something went wrong while generating Access Token")
+        return res.json("Something went wrong while generating Access Token")
 
 
         }
 }
 
 
- const registerUser =  asyncHandler(async (req,res)=>{
+const registerUser = asyncHandler(async (req, res) => {
+    // Get user data from frontend
+    const { username, email, password, fullName } = req.body;
 
-
-    // get user data from frontend
-    const {username, email, password,fullName} = req.body
-   // console.log("user email is: ",email)
-    console.log(username, email, password,fullName)
-
-        // validate the data from user   
-    if( [username,email,password].some((field)=>field?.trim() === "")){
-        throw new ApiError(400, "All fields are required")
-    }   
-
-    
-    // check if the user already exists
-    const existedUser = await User.findOne({email})
-
-    if(existedUser){
-        throw new ApiError(409,"User Already Exists with this Email")
+    // Validate the data from user   
+    if ([username, email, password].some((field) => field?.trim() === "")) {
+        return res.status(400).json({ message: "Username, Email, Password fields are required" });
     }
-    // created user object, create db entry
-    const user = await User.create({
-        username: username.toLowerCase(),
-        email: email.toLowerCase(),
-        fullName: fullName ? fullName: "",
-        password,
-    })
 
-    //remove password from response
-    const createdUser = await User.findById(user._id).select("-password")
-    
-
-    //check for user response
-    if(!createdUser){
-        throw new ApiError(500, "Something went wrong while registering the user")
+    // Check if the user already exists
+    const existedUser = await User.findOne({ email });
+    if (existedUser) {
+        return res.status(400).json({ message: "User Already Exists with this Email" });
     }
-    // return response
-    return res.status(201).json(
-       new ApiResponse(200, createdUser,"User Registered Successfully")
-    )
-})
+
+    try {
+        // Create user object and create a DB entry
+        const user = await User.create({
+            username: username.toLowerCase(),
+            email: email.toLowerCase(),
+            fullName: fullName ? fullName : "",
+            password,
+        });
+
+        // Respond with success if user is created successfully
+        res.status(201).json({
+            message: "User registered successfully",
+            user: {
+                username: user.username,
+                email: user.email,
+                fullName: user.fullName,
+            },
+        });
+    } catch (error) {
+        if (error.code === 11000) { // MongoDB duplicate key error code
+            return res.status(400).json({ message: `User with username "${username}" already exists` });
+        }
+        // Handle any other errors
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+});
+
 
 const loginUser = asyncHandler(async (req, res)=>{
 
 const {username, email, password} = req.body
 if(!username && !email){
-    throw new ApiError(400, "username or email is required")
+    return res.json("Something went wrong while generating Access Token")
 }
 
 const user = await User.findOne({
@@ -74,13 +75,13 @@ const user = await User.findOne({
 })
 
 if(!user){
-    throw new ApiError(400, "User doesn't Exist")
+    return res.json("User doesn't Exist")
 }
 
 const isPasswordValid =   await user.isPasswordCorrect(password)
 
 if(!isPasswordValid){
-throw new ApiError(401,"Invalid User Credentials")
+return res.json("Invalid User Credentials")
 }
 
 
@@ -129,7 +130,7 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
      const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
     
      if(!isPasswordCorrect){
-        throw new ApiError(400,"Incorrect Password")
+        return res.json("Incorrect Password")
      }
 
 
@@ -148,13 +149,13 @@ const updateAccountDetails = asyncHandler(async(req,res)=>{
     if(email){
         const existedUserEmail = await User.findOne({email})
         if(existedUserEmail){
-            throw new ApiError(409,"User Already Exists with this Email")
+            return res.json("User Already Exists with this Email")
         }
     }
     if(username){
     const existedUsername = await User.findOne({username})
         if(existedUsername){
-          throw new ApiError(409,"User Already Exists with this username")
+          return res.json("User Already Exists with this username")
         }
     }
     let updateFields = {};
