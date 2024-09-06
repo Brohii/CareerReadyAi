@@ -77,10 +77,9 @@ const startInterviewSession = asyncHandler(async (req,res)=>{
       {
         role: "user",
         content: `Please review the following CV and job description. 
-                  - If the CV matches the job description, return: { "match": true, "suggestion": "" } dont add any comment just just the return response as asked when its true.
-                  - If the CV does not match the job description, return: { "match": false, "suggestion":  suggestion the user for other positions the user should consider based on the CV} 
-                  - if the job description and cv has the same domain but with different experience level should be considered matched and return true.
-                  - similar domains and fields should be matched true. (this should be given importance)
+                  1 If the CV matches the job description, return: { "match": true, "suggestion": "" } dont add any comment just just the return response as asked when its true.
+                  2 If the CV does not match the job description, return: { "match": false, "suggestion":  suggestion the user for other positions the user should consider based on the CV} 
+                  3 if the job description and cv has the same domain (field) but with different experience level should be considered matched and return true.
                   CV: ${cvTextInput}
                   
                   Job Description: ${jobDescription}`,
@@ -95,9 +94,11 @@ const startInterviewSession = asyncHandler(async (req,res)=>{
     });
     console.log(response.choices[0].message.content)
     const modelResponse= response.choices[0].message.content;
-    //const matchResult = JSON.parse(modelResponse);
-   // console.log(matchResult)
-    if (!modelResponse.match) {
+    const matchResult = JSON.parse(modelResponse);
+
+    console.log("this is false " ,matchResult.match)
+    if (!matchResult.match) {
+      console.log("ABCD TEST")
         return res.status(200).json(new ApiResponse (200,{matchResult},"The user CV doesn't Match with the Job Description"));
     }
   }catch(error){

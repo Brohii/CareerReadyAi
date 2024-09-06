@@ -18,9 +18,7 @@ const listcvfiles = asyncHandler(async(req,res)=>{
             return res.status(404).json({ message: 'No CVs found for this user' });
         }
 
-        const cvFilePaths = cvEntries.map(cv => cv.cvFileUrl);
-
-        return res.status(200).json({ cvFilePaths });
+        return res.status(200).json(cvEntries)
 
 })
 
@@ -38,7 +36,6 @@ const uploadCvFile = asyncHandler(async(req,res)=>{
     
         
             const cvLocalPath = req.file.path
-        
         
             const cvContent = await extractTextFromPDF(cvLocalPath)
         
