@@ -37,7 +37,7 @@ const openai = new OpenAI({
   
  function removeInterviewCode(text) {
   // Regular expression to match the pattern "Interview code is: <code>." and remove it.
-  const pattern = /interview code is:\s*\w+\s*\./i;
+  const pattern = /and the interview code is:\s*\w+\s*\./i;
   return text.replace(pattern, '');
 }
 
@@ -96,9 +96,7 @@ const startInterviewSession = asyncHandler(async (req,res)=>{
     const modelResponse= response.choices[0].message.content;
     const matchResult = JSON.parse(modelResponse);
 
-    console.log("this is false " ,matchResult.match)
     if (!matchResult.match) {
-      console.log("ABCD TEST")
         return res.status(200).json(new ApiResponse (200,{matchResult},"The user CV doesn't Match with the Job Description"));
     }
   }catch(error){
@@ -159,12 +157,15 @@ const startInterviewSession = asyncHandler(async (req,res)=>{
           } else {
             console.log(run.status);
           }
+
+          // agent's response with greeting as soon as the cv and jd matches.
           const assistantMessage = {
               assistant: conversationArray[1]
             }
-          
+
+          // agent's response with greeting as soon as the cv and jd matches.
           console.log(assistantMessage)
-          
+
           const interviewStatus = 'started'
 
           const  interviewSession = await InterviewSession.create({
@@ -337,11 +338,8 @@ const interviewSession = asyncHandler(async (req,res)=>{
   const modelResponse = iresponse.choices[0].message.content;
   console.log(modelResponse)
   const generatedFSR = JSON.parse(modelResponse);
-  console.log(generatedFSR?.Feedback?.feedback)
-  console.log(generatedFSR?.Rating?.rating)
-  console.log(generatedFSR?.Suggestion?.suggestion)
 
-
+console.log(`${generatedFSR} this is fsr`)
   
   // store the suggestions, feedback, and rating in the database and return the response.
 
@@ -356,6 +354,9 @@ const interviewSession = asyncHandler(async (req,res)=>{
     }
     ,{new: true}
   )
+
+  console.log(`${storeFSR} this is stored fsr`)
+
   const updatedValues = await InterviewSession.findById(interviewID)
   
   console.log(updatedValues)
