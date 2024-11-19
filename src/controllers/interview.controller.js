@@ -5,7 +5,6 @@ import { CvCollection } from "../models/cvCollection.model.js";
 import { InterviewSession } from "../models/interviewSession.model.js";
 import { User } from "../models/user.model.js";
 import OpenAI from "openai";
-import { log } from "console";
 import { ApiError } from "../utils/ApiError.js";
 
 
@@ -40,12 +39,6 @@ const openai = new OpenAI({
   const pattern = /and the interview code is:\s*\w+\s*\./i;
   return text.replace(pattern, '');
 }
-
-
-
-
-
-
 
 
 
