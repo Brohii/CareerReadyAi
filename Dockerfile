@@ -18,3 +18,4 @@ EXPOSE 9000
 
 # Run the web service on container startup
 CMD ["node", "app.js"]
+
