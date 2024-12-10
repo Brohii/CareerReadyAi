@@ -20,7 +20,7 @@ import userRouter from './routes/user.route.js';
 import cvRouter from './routes/cv.route.js'
 import interviewRouter from './routes/interview.route.js'
 import historyRouter from './routes/history.route.js'
-import speechInterviewRouter from './routes/speech.interview.route.js'
+// import speechInterviewRouter from './routes/speech.interview.route.js'
 
 app.use("/api/v1/users",userRouter)
 app.use("/api/v1/cv", cvRouter)
