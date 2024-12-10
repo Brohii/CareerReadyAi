@@ -27,7 +27,7 @@ app.use("/api/v1/cv", cvRouter)
 app.use("/api/v1/interview", interviewRouter)
 app.use("/api/v1/history", historyRouter)
 app.use("/api/v1/speech-interview", interviewRouter)
-app.use("/api/v1/speech-interview", speechInterviewRouter)
+// app.use("/api/v1/speech-interview", speechInterviewRouter)
 
 
 export {app}
